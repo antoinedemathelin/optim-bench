@@ -1,0 +1,5 @@
+# Reference implementation of sandbox/CONTRACT.md: HiGHS at defaults.
+# Evaluated through exactly the same path as an external solver repo, so the
+# baseline numbers include the same process start-up and file I/O overhead.
+build: pip install -e .
+run: highs-baseline {instance} --time-limit {time_limit} --threads {threads} --out {out}

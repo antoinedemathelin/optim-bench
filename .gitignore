@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+results/
+instances.yaml
+instances/
+history/*.shard*.json
+shards/
+report.md
+.DS_Store

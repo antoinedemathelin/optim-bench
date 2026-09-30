@@ -1,0 +1,13 @@
+[project]
+name = "highs-baseline"
+version = "1.0.0"
+description = "optim-bench baseline: HiGHS at defaults behind the solver contract"
+requires-python = ">=3.9"
+dependencies = ["highspy>=1.7"]
+
+[project.scripts]
+highs-baseline = "highs_baseline.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

@@ -1,0 +1,185 @@
+# Evaluate new tags of the solver repository against the hidden suite.
+#
+# Setup (once):
+#   - repository variable AGENT_REPO = owner/name of the solver repo
+#   - repository secret  AGENT_REPO_TOKEN = fine-grained PAT on the solver repo with
+#     Contents: read and Issues: write (nothing on this repo -- the solver author
+#     must never get credentials that reach the bench)
+#   - repository secret  BENCH_KEY = passphrase of suite.enc (the instances are not
+#     in the repo in clear: this repo is public, the suite is not)
+#   - GitHub Pages: deploy from branch main, folder / (dashboard at /dashboard/)
+#   - for the solver side: a fine-grained PAT on THIS repo with Actions: write only
+#     (no Contents), so it can start this workflow and see whether one is running,
+#     and nothing else
+#
+# Trigger: workflow_dispatch only. Scheduled runs were dropped because GitHub runs
+# them hours late under load (observed: a 30-minute cron firing six times in 26 h).
+# The solver side dispatches after pushing a tag; a run that finds more unevaluated
+# tags after publishing dispatches the next one itself, so a burst of tags drains
+# in order without further triggers. The first run evaluates
+# sandbox/baseline-solver (HiGHS) to get baseline numbers on the runner hardware;
+# later runs pick the oldest unevaluated tag. There are no inputs on purpose: the
+# dispatching actor is the same account whether a person or the solver side
+# triggers, so any input would be available to the solver side too. To
+# re-evaluate a tag, delete history/<tag>.json and dispatch.
+name: evaluate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: evaluate
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  SHARDS: 12
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    outputs:
+      kind: ${{ steps.pick.outputs.kind }}
+      repo: ${{ steps.pick.outputs.repo }}
+      ref: ${{ steps.pick.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: sync to the latest main and check for a run already in progress
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A run's checkout is pinned to the commit it was *created* on; a run queued
+          # behind another evaluation would otherwise not see the history that
+          # evaluation commits and would evaluate the same tag twice.
+          git fetch --quiet origin main && git reset --quiet --hard origin/main
+          others=$(gh run list -R "${{ github.repository }}" --workflow evaluate.yml --status in_progress \
+                   --json databaseId --jq "[.[] | select(.databaseId != ${{ github.run_id }})] | length")
+          if [ "$others" != "0" ]; then
+            echo "::notice::another evaluation is in progress; skipping this run"
+            echo "busy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "busy=false" >> "$GITHUB_OUTPUT"
+          fi
+      - id: pick
+        env:
+          GH_TOKEN: ${{ secrets.AGENT_REPO_TOKEN }}
+          BENCH_KEY: ${{ secrets.BENCH_KEY }}
+        run: |
+          if [ "${{ steps.guard.outputs.busy }}" = "true" ]; then
+            echo "kind=none" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -z "$BENCH_KEY" ]; then
+            echo "::warning::BENCH_KEY secret not set; nothing evaluated"
+            echo "kind=none" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ -z "$GH_TOKEN" ] || [ -z "${{ vars.AGENT_REPO }}" ]; then
+            # no access to the solver repo yet: the baseline can still be measured
+            if [ -f history/baseline.json ] && python -c "import json,sys; sys.exit(json.load(open('history/baseline.json'))['status']!='ok')"; then
+              echo "::warning::AGENT_REPO_TOKEN secret / AGENT_REPO variable not set; baseline exists, nothing to evaluate"
+              echo "kind=none" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            python sandbox/pick_tag.py --agent-repo "${{ vars.AGENT_REPO || 'unset/unset' }}" --baseline; exit 0
+          fi
+          python sandbox/pick_tag.py --agent-repo "${{ vars.AGENT_REPO }}"
+
+  evaluate:
+    needs: find
+    if: needs.find.outputs.kind != 'none'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install -r sandbox/requirements.txt
+      - name: unpack the private suite
+        env:
+          BENCH_KEY: ${{ secrets.BENCH_KEY }}
+        run: python sandbox/suite_bundle.py unpack
+      - name: evaluate shard ${{ matrix.shard }}/${{ env.SHARDS }}
+        env:
+          AGENT_REPO_TOKEN: ${{ secrets.AGENT_REPO_TOKEN }}
+          BENCH_KEY: ${{ secrets.BENCH_KEY }}
+        run: |
+          repo="${{ needs.find.outputs.repo }}"
+          if [[ "$repo" == https://github.com/* ]]; then
+            repo="https://x-access-token:${AGENT_REPO_TOKEN}@github.com/${repo#https://github.com/}"
+          fi
+          mkdir -p shards
+          python sandbox/evaluate.py --repo "$repo" --ref "${{ needs.find.outputs.ref }}" \
+            --mode default --threads 4 \
+            --shard ${{ matrix.shard }}/${{ env.SHARDS }} --public \
+            --out shards/${{ needs.find.outputs.ref }}.shard${{ matrix.shard }}.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard }}
+          path: shards/
+
+  publish:
+    needs: [find, evaluate]
+    if: needs.find.outputs.kind != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install -r sandbox/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          path: shards
+          merge-multiple: true
+      - name: unpack the private suite
+        env:
+          BENCH_KEY: ${{ secrets.BENCH_KEY }}
+        run: python sandbox/suite_bundle.py unpack
+      - name: merge, report, index
+        run: |
+          git fetch --quiet origin main && git reset --quiet --hard origin/main
+          ref="${{ needs.find.outputs.ref }}"
+          python sandbox/merge.py shards/${ref}.shard*.json --out history/${ref}.json
+          if [ "${{ needs.find.outputs.kind }}" = "baseline" ] && ! python -c "import json,sys; sys.exit(json.load(open('history/baseline.json'))['status']!='ok')"; then
+            echo "::error::baseline evaluation failed; not recording it"; cat history/baseline.json | head -c 2000; exit 1
+          fi
+          python sandbox/report.py history/${ref}.json --baseline history/baseline.json --holdout --out history/${ref}.md
+          python sandbox/report.py history/${ref}.json --baseline history/baseline.json --out report.md
+          python sandbox/build_index.py
+      - name: commit history
+        run: |
+          git config user.name "optim-bench bot"
+          git config user.email "45264923+antoinedemathelin@users.noreply.github.com"
+          git add history
+          git commit -m "evaluate ${{ needs.find.outputs.ref }}" || exit 0
+          git pull --rebase
+          git push
+      - name: open feedback issue on the solver repo
+        if: needs.find.outputs.kind == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.AGENT_REPO_TOKEN }}
+        run: |
+          gh issue create -R "${{ vars.AGENT_REPO }}" \
+            -t "optim-bench: ${{ needs.find.outputs.ref }}" -F report.md
+      - name: dispatch the next evaluation if tags are still waiting
+        env:
+          GH_TOKEN: ${{ secrets.AGENT_REPO_TOKEN }}
+        run: |
+          # history/ now contains this run's record, so pick_tag sees only what is left.
+          # Only reached when every step above succeeded: a failing publish must not
+          # re-dispatch itself forever.
+          next=$(python sandbox/pick_tag.py --agent-repo "${{ vars.AGENT_REPO }}" | sed -n 's/^ref=//p')
+          if [ -n "$next" ]; then
+            echo "::notice::$next is waiting; dispatching the next run"
+            GH_TOKEN="${{ github.token }}" gh workflow run evaluate.yml -R "${{ github.repository }}" --ref main
+          else
+            echo "no unevaluated tag left"
+          fi
