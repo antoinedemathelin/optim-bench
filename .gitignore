@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 results/
 instances.yaml
+instances
 instances/
 history/*.shard*.json
 shards/
