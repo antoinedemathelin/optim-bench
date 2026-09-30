@@ -143,15 +143,22 @@ def summarize(rows, limit):
             for sr in [[dict(r, track_all="all") for r in rows if r["split"] == split]]}
 
 
-def anonymize(row):
-    """Public records must not identify instances (a MIPLIB name or an objective
-    value is enough to find and tune on the file). Keyed hash of the name with
-    BENCH_KEY when set, so the same instance maps to the same id across runs."""
+def public_id(name):
+    """Keyed hash of an instance name with BENCH_KEY when set (plain hash
+    otherwise), so the same instance maps to the same 10-character id across runs
+    and nothing public can be turned back into a name without the key."""
     import hashlib
     import hmac
     key = os.environ.get("BENCH_KEY", "").encode()
-    ident = hmac.new(key, row["name"].encode(), hashlib.sha256).hexdigest()[:10] if key \
-        else hashlib.sha256(row["name"].encode()).hexdigest()[:10]
+    if key:
+        return hmac.new(key, name.encode(), hashlib.sha256).hexdigest()[:10]
+    return hashlib.sha256(name.encode()).hexdigest()[:10]
+
+
+def anonymize(row):
+    """Public records must not identify instances (a MIPLIB name or an objective
+    value is enough to find and tune on the file)."""
+    ident = public_id(row["name"])
     keep = {"family", "area", "track", "split", "runtime_s", "killed", "claimed_status", "outcome",
             "wrong", "note", "gap", "max_col_violation", "max_int_violation", "max_row_violation"}
     out = {k: v for k, v in row.items() if k in keep}
@@ -230,7 +237,8 @@ def main():
               "hardware": hardware(), "bench_python": platform.python_version()}
     t_all = time.time()
     try:
-        print(f"checkout {args.repo} @ {args.ref}", flush=True)
+        # never echo credentials embedded in the clone URL
+        print(f"checkout {re.sub(r'//[^@/]+@', '//', args.repo)} @ {args.ref}", flush=True)
         record["sha"] = checkout(args.repo, args.ref, src)
         cfg = yaml.safe_load((src / "bench.yaml").read_text())
         if not isinstance(cfg, dict) or "run" not in cfg:
@@ -270,8 +278,12 @@ def main():
                 record["solver"] = result["solver"]
             rows.append(row)
             gap = f"{v['gap']:.2%}" if v["gap"] is not None else "-"
-            print(f"[{k:3d}/{len(manifest)}] {e['name']:<26} {v['outcome']:<8} {wall:7.1f}s gap={gap} "
-                  f"{v['wrong']} {v['note']}", flush=True)
+            # The progress line lands in the CI log, which is public on a public repo:
+            # with --public show the keyed id, never the name, and drop the note
+            # (it may quote solver stderr). The full row stays in the record.
+            label = public_id(e["name"]) if args.public else e["name"]
+            print(f"[{k:3d}/{len(manifest)}] {label:<26} {v['outcome']:<8} {wall:7.1f}s gap={gap} "
+                  f"{v['wrong']}{'' if args.public else ' ' + v['note']}", flush=True)
         if args.public:
             rows = [anonymize(r) for r in rows]
         record["rows"] = rows
