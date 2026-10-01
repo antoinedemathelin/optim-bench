@@ -17,13 +17,23 @@ def fmt_gap(g):
     return "-" if g is None else f"{g:.1%}"
 
 
+def fmt_delta(a):
+    """Mean relative objective difference against the best objective the bench had
+    measured before the run, negative meaning better, with the better/same/worse
+    split behind it."""
+    d = a.get("mean_obj_delta")
+    if d is None:
+        return "-"
+    return f"{d:+.2%} ({a.get('obj_better', 0)}/{a.get('obj_equal', 0)}/{a.get('obj_worse', 0)})"
+
+
 def table(agg, base_agg, key_label):
-    lines = [f"| {key_label} | n | solved | no solution | wrong | SGM-10 (s) | end-gap unsolved | HiGHS solved | HiGHS SGM-10 |",
-             "|---|---|---|---|---|---|---|---|---|"]
+    lines = [f"| {key_label} | n | proved | no solution | flags | obj vs known (b/s/w) | SGM-10 (s) | self-reported gap | HiGHS proved | HiGHS SGM-10 |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for g, a in agg.items():
         b = (base_agg or {}).get(g)
         wrong = f"{a['wrong']} ({', '.join(a['wrong_kinds'])})" if a["wrong"] else "0"
-        lines.append(f"| {g} | {a['n']} | {a['solved']} | {a.get('no_solution', 0)} | {wrong} | {a['sgm10']} | {fmt_gap(a['mean_gap_unsolved'])} | "
+        lines.append(f"| {g} | {a['n']} | {a['solved']} | {a.get('no_solution', 0)} | {wrong} | {fmt_delta(a)} | {a['sgm10']} | {fmt_gap(a['mean_gap_unsolved'])} | "
                      f"{b['solved'] if b else '-'} | {b['sgm10'] if b else '-'} |")
     return lines
 
@@ -49,19 +59,25 @@ def render(rec, base=None, holdout=False):
             continue
         bo = base["summary"][split]["overall"] if base and base["summary"][split].get("overall") else None
         lines += ["", f"## {split} set — {o['n']} instances", "",
-                  f"**Solved {o['solved']}/{o['n']}, wrong answers {o['wrong']}, SGM-10 {o['sgm10']} s"
+                  f"**Proved {o['solved']}/{o['n']}, objective {fmt_delta(o)}, flags {o['wrong']}, SGM-10 {o['sgm10']} s"
                   + (f" (HiGHS: {bo['solved']}/{bo['n']}, {bo['wrong']}, {bo['sgm10']} s)" if bo else "") + "**", ""]
         if o["wrong"]:
-            lines += [f"Wrong-answer categories: {', '.join(o['wrong_kinds'])}. "
-                      "A wrong answer is an infeasible or misreported solution, a false optimality claim, "
-                      "or a bound that excludes the true optimum — see the contract, section 4.", ""]
+            lines += [f"Flag categories: {', '.join(o['wrong_kinds'])}. "
+                      "A flag is a claim the bench could contradict from the model file: an infeasible or "
+                      "misreported solution, or a bound or optimality claim better than an objective that "
+                      "has actually been achieved — see the contract, section 4.", ""]
         lines += ["### By application area", ""] + table(s[split]["by_area"], base["summary"][split]["by_area"] if base else None, "area")
         lines += ["", "### By family", ""] + table(s[split]["by_family"], base["summary"][split]["by_family"] if base else None, "family")
-    lines += ["", "Scoring: SGM-10 = shifted geometric mean of wall time (10 s shift), unsolved counted at the "
-              "limit; an instance is solved only if the returned solution is verified feasible and within 1e-4 "
-              "of the reference optimum. 'no solution' counts unsolved instances where no feasible point was "
-              "returned at all; 'end-gap' averages |objective - bound| / |objective| over the unsolved instances "
-              "that did return one. Lower SGM-10 is better. Wrong answers must be zero before speed matters."]
+    lines += ["", "Scoring. The bench does not know any optimum and never claims one; every number below is a "
+              "measurement or a check against one. 'obj vs known' is the mean relative difference between the "
+              "objective you returned and the best objective the bench had measured before this run, negative "
+              "meaning you did better, followed by how many instances were better / the same / worse: beating "
+              "the stored value is a better solution, not an error. 'proved' counts instances where you claimed "
+              "optimality and nothing contradicted it; proving optimality is scored separately from finding a "
+              "good solution. SGM-10 = shifted geometric mean of wall time (10 s shift), instances without a "
+              "proof counted at the limit; lower is better. 'no solution' counts instances where no feasible "
+              "point was returned. 'self-reported gap' averages your own |objective - bound| / |objective|, "
+              "which the bench cannot verify, only contradict. Flags must be zero before speed matters."]
     return "\n".join(lines) + "\n"
 
 

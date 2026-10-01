@@ -64,22 +64,38 @@ Rules:
 
 ## 4. How results are scored
 
+The bench knows no optimum and never asserts one. It stores, per instance, the
+best objective it has *measured*: a HiGHS run for Track B, the published value
+for Track A. That number is a solution someone exhibited, not a proven optimum,
+and a solver that returns something better has found a better solution, which is
+a result and not an error. Everything below is either a measurement or a check of
+a claim against a measurement.
+
 Per instance, in order:
 
 1. `solution` infeasible / integrality violated / objective misreported by more
-   than the tolerance → **wrong answer** (worst outcome).
-2. `status: optimal` but the verified objective is worse than the reference
-   optimum by more than 1e-4 relative → **wrong answer** (false optimality claim).
-3. `bound` better than the reference optimum by more than 1e-4 relative → **wrong
-   answer** (false bound).
-4. `status: optimal` and the verified objective is within 1e-4 relative of the
-   reference optimum → **solved**, scored by wall time.
-5. Otherwise → **unsolved**, scored at the time limit, with the end gap
+   than the tolerance → **flag** (worst outcome). Checked against the model file.
+2. `bound` better, by more than 1e-4 relative, than an objective that has actually
+   been achieved — the stored measurement or your own returned solution, whichever
+   is better → **flag** (invalid bound). A lower bound cannot beat a solution that
+   exists.
+3. `status: optimal` whose verified objective is worse than an achieved objective
+   → **flag** (false optimality claim), since claiming optimality asserts a bound
+   equal to that objective.
+4. `status: infeasible` or `unbounded` while a feasible solution is known → **flag**.
+5. `status: optimal`, verified feasible, nothing above contradicted → **proved**,
+   scored by wall time.
+6. Otherwise → **unproved**, scored at the time limit, with your self-reported gap
    `|objective - bound| / |objective|` recorded (or "no solution").
 
-Aggregates per problem family: number solved, wrong answers, shifted geometric
-mean of runtime (10 s shift, unsolved at the limit), mean end gap on unsolved.
-Lower SGM is better; wrong answers are reported separately and should be zero.
+Your bound can never be confirmed, only contradicted: there is no proof for the
+bench to check. A weak bound is not a flag, only a missed proof.
+
+Aggregates per problem family: objective difference against the stored
+measurement (negative is better) with the better/same/worse split, number proved,
+flags, shifted geometric mean of runtime (10 s shift, unproved at the limit),
+mean self-reported gap on unproved instances. Lower SGM is better; flags are
+reported separately and should be zero.
 
 ## 5. Feedback
 

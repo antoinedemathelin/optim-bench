@@ -12,6 +12,7 @@ def compact(rec):
             return None
         o = s["overall"]
         return {"n": o["n"], "solved": o["solved"], "wrong": o["wrong"], "sgm10": o["sgm10"],
+                "mean_obj_delta": o.get("mean_obj_delta"),
                 "wrong_kinds": o.get("wrong_kinds", []),
                 "by_area": {k: {"n": v["n"], "solved": v["solved"], "wrong": v["wrong"], "sgm10": v["sgm10"]}
                             for k, v in s["by_area"].items()},

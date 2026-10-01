@@ -125,8 +125,13 @@ def aggregate(rows, limit, key):
         solved = [r for r in fr if r["outcome"] == "solved"]
         wrong = [r for r in fr if r["wrong"]]
         gaps = [r["gap"] for r in fr if r["outcome"] != "solved" and r["gap"] is not None]
+        deltas = [r["obj_delta"] for r in fr if r.get("obj_delta") is not None]
         out[g] = {"n": len(fr), "solved": len(solved), "wrong": len(wrong),
                   "wrong_kinds": sorted({r["wrong"] for r in wrong}),
+                  "obj_better": sum(1 for d in deltas if d < -1e-9),
+                  "obj_equal": sum(1 for d in deltas if abs(d) <= 1e-9),
+                  "obj_worse": sum(1 for d in deltas if d > 1e-9),
+                  "mean_obj_delta": (round(sum(deltas) / len(deltas), 5) if deltas else None),
                   "sgm10": round(sgm([r["runtime_s"] if r["outcome"] == "solved" else limit for r in fr], limit), 2),
                   "mean_gap_unsolved": (round(sum(gaps) / len(gaps), 4) if gaps else None),
                   "no_solution": sum(1 for r in fr if r["outcome"] != "solved"
@@ -213,15 +218,12 @@ def main():
         sys.exit("no instances selected")
 
     suite = yaml.safe_load((ROOT / "instances.yaml").read_text())
-    optima = {e["name"]: (float(e["optimum"]) if e.get("optimum") is not None else None)
+    known = {e["name"]: (float(e["optimum"]) if e.get("optimum") is not None else None)
               for e in suite["track_a"]}
-    best_known = set()
     ref_path = ROOT / "instances" / "reference.yaml"
     if ref_path.exists():
         for name, v in (yaml.safe_load(ref_path.read_text()) or {}).items():
-            optima.setdefault(name, float(v["optimum"] if isinstance(v, dict) else v))
-            if isinstance(v, dict) and v.get("kind") == "best_known":
-                best_known.add(name)
+            known.setdefault(name, float(v["optimum"] if isinstance(v, dict) else v))
 
     workdir = Path(args.workdir) if args.workdir else Path(tempfile.mkdtemp(prefix="optim-bench-"))
     workdir.mkdir(parents=True, exist_ok=True)
@@ -266,8 +268,7 @@ def main():
             result, wall, killed, rc, err = run_instance(cfg["run"], src, env, prefix,
                                                          (ROOT / e["path"]).resolve(), limit, args.threads, out_path)
             sense = e.get("stats", {}).get("sense", 1)
-            v = verify.verify(ROOT / e["path"], result, optima.get(e["name"]), sense, wall, limit,
-                              best_known=e["name"] in best_known)
+            v = verify.verify(ROOT / e["path"], result, known.get(e["name"]), sense, wall, limit)
             if killed:
                 v["note"] = (v["note"] + "; " if v["note"] else "") + "killed at limit"
             if result is None and rc not in (0, None):
@@ -284,10 +285,10 @@ def main():
             label = public_id(e["name"]) if args.public else e["name"]
             print(f"[{k:3d}/{len(manifest)}] {label:<26} {v['outcome']:<8} {wall:7.1f}s gap={gap} "
                   f"{v['wrong']}{'' if args.public else ' ' + v['note']}", flush=True)
+        record["summary"] = summarize(rows, limit)
         if args.public:
             rows = [anonymize(r) for r in rows]
         record["rows"] = rows
-        record["summary"] = summarize(rows, limit)
         record["status"] = "ok"
     except Exception as ex:  # noqa: BLE001
         record["status"] = "error"

@@ -12,7 +12,8 @@ Loop: the solver author pushes a **tag** and dispatches the bench workflow (a
 token with *Actions: write* on the bench repo and nothing else) → the workflow
 picks the oldest unevaluated tag → clones it into a fresh
 venv on a runner, builds, runs every instance under a hard kill, **verifies each
-returned solution independently** → commits `history/<tag>.json` + `<tag>.md`,
+returned solution independently** (and contradicts any bound or optimality
+claim that beats an objective already achieved) → commits `history/<tag>.json` + `<tag>.md`,
 rebuilds `history/index.json` for the dashboard → opens an issue on the solver
 repo with per-family aggregates of the feedback set → if more tags are waiting it
 dispatches itself again, so a burst drains in order. The held-out set (a third of

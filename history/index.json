@@ -19,6 +19,7 @@
    "solved": 47,
    "wrong": 0,
    "sgm10": 74.42,
+   "mean_obj_delta": null,
    "wrong_kinds": [],
    "by_area": {
     "auction": {
@@ -246,6 +247,7 @@
    "solved": 22,
    "wrong": 1,
    "sgm10": 73.93,
+   "mean_obj_delta": null,
    "wrong_kinds": [
     "BOUND_EXCEEDS_REFERENCE"
    ],
@@ -438,6 +440,7 @@
     "solved": 3,
     "wrong": 0,
     "sgm10": 280.68,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -665,6 +668,7 @@
     "solved": 1,
     "wrong": 0,
     "sgm10": 291.07,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -854,6 +858,7 @@
     "solved": 12,
     "wrong": 0,
     "sgm10": 224.41,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -1081,6 +1086,7 @@
     "solved": 9,
     "wrong": 0,
     "sgm10": 193.78,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -1270,6 +1276,7 @@
     "solved": 16,
     "wrong": 0,
     "sgm10": 193.68,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -1497,6 +1504,7 @@
     "solved": 9,
     "wrong": 0,
     "sgm10": 189.78,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -1686,6 +1694,7 @@
     "solved": 14,
     "wrong": 0,
     "sgm10": 194.36,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -1913,6 +1922,7 @@
     "solved": 8,
     "wrong": 0,
     "sgm10": 200.32,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -2102,6 +2112,7 @@
     "solved": 17,
     "wrong": 0,
     "sgm10": 199.83,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -2329,6 +2340,7 @@
     "solved": 10,
     "wrong": 0,
     "sgm10": 198.62,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -2518,6 +2530,7 @@
     "solved": 17,
     "wrong": 0,
     "sgm10": 192.13,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -2745,6 +2758,7 @@
     "solved": 9,
     "wrong": 0,
     "sgm10": 194.7,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -2934,6 +2948,7 @@
     "solved": 19,
     "wrong": 0,
     "sgm10": 183.38,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -3161,6 +3176,7 @@
     "solved": 11,
     "wrong": 0,
     "sgm10": 180.01,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -3350,6 +3366,7 @@
     "solved": 19,
     "wrong": 0,
     "sgm10": 186.45,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -3577,6 +3594,7 @@
     "solved": 11,
     "wrong": 0,
     "sgm10": 182.17,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -3766,6 +3784,7 @@
     "solved": 19,
     "wrong": 0,
     "sgm10": 183.73,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -3993,6 +4012,7 @@
     "solved": 9,
     "wrong": 0,
     "sgm10": 174.47,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -4182,6 +4202,7 @@
     "solved": 21,
     "wrong": 0,
     "sgm10": 177.73,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -4409,6 +4430,7 @@
     "solved": 10,
     "wrong": 0,
     "sgm10": 172.16,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -4598,6 +4620,7 @@
     "solved": 20,
     "wrong": 0,
     "sgm10": 181.2,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -4825,6 +4848,7 @@
     "solved": 11,
     "wrong": 0,
     "sgm10": 163.71,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -5014,6 +5038,7 @@
     "solved": 19,
     "wrong": 0,
     "sgm10": 172.24,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -5241,6 +5266,7 @@
     "solved": 13,
     "wrong": 0,
     "sgm10": 143.05,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -5430,6 +5456,7 @@
     "solved": 45,
     "wrong": 0,
     "sgm10": 67.83,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -5657,6 +5684,7 @@
     "solved": 21,
     "wrong": 1,
     "sgm10": 69.49,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],
@@ -5848,6 +5876,7 @@
     "solved": 46,
     "wrong": 0,
     "sgm10": 53.2,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -6075,6 +6104,7 @@
     "solved": 21,
     "wrong": 1,
     "sgm10": 57.18,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],
@@ -6266,6 +6296,7 @@
     "solved": 47,
     "wrong": 0,
     "sgm10": 52.86,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -6493,6 +6524,7 @@
     "solved": 19,
     "wrong": 1,
     "sgm10": 61.38,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],
@@ -6684,6 +6716,7 @@
     "solved": 47,
     "wrong": 0,
     "sgm10": 52.98,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -6911,6 +6944,7 @@
     "solved": 19,
     "wrong": 1,
     "sgm10": 61.43,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],
@@ -7102,6 +7136,7 @@
     "solved": 47,
     "wrong": 0,
     "sgm10": 56.95,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -7329,6 +7364,7 @@
     "solved": 19,
     "wrong": 1,
     "sgm10": 62.88,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],

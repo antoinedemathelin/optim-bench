@@ -98,13 +98,20 @@ def check_solution(model, x):
     }
 
 
-def verify(mps_path, result, reference=None, sense=None, runtime_s=None, time_limit=None,
-           best_known=False):
+def verify(mps_path, result, reference=None, sense=None, runtime_s=None, time_limit=None):
     """Score one instance. `result` is the parsed result JSON (or None if the
-    solver produced nothing). Returns the verified record."""
+    solver produced nothing). Returns the verified record.
+
+    `reference` is a *measured* objective: the best feasible solution the bench
+    knew of before this run (a HiGHS run for Track B, the published value for
+    Track A). It is not treated as an optimum. Nothing proves an optimum, and a
+    reference that came from a solver can simply be wrong -- it has been. The only
+    sound comparison point is an objective someone has actually exhibited, so a
+    solution better than the reference is a better solution, never a fault.
+    """
     out = {"claimed_status": None, "claimed_objective": None, "claimed_bound": None,
            "verified_objective": None, "outcome": "unsolved", "wrong": "", "note": "",
-           "gap": None}
+           "gap": None, "obj_delta": None}
     if result is None or not isinstance(result, dict):
         out["note"] = "no result file"
         return out
@@ -135,25 +142,28 @@ def verify(mps_path, result, reference=None, sense=None, runtime_s=None, time_li
         out["wrong"] = "MISSING_SOLUTION"
         return out
 
-    if reference is not None:
-        tol = GAP_TOL * max(1.0, abs(reference))
-        if bound is not None and sgn * (float(bound) - reference) > tol:
-            out["wrong"] = "BOUND_EXCEEDS_REFERENCE"
+    # Best objective anyone has actually exhibited for this instance: the stored
+    # measurement, or this run's own verified solution when that is better.
+    best = reference
+    if verified is not None and (best is None or sgn * (verified - best) < 0):
+        best = verified
+    if best is not None:
+        tol = GAP_TOL * max(1.0, abs(best))
+        # A lower bound can never be better than a solution someone has exhibited.
+        if bound is not None and sgn * (float(bound) - best) > tol:
+            out["wrong"] = "INVALID_BOUND"
             return out
-        if status == "optimal" and verified is not None and sgn * (verified - reference) > tol:
+        # Claiming optimality asserts a bound equal to the returned objective.
+        if status == "optimal" and verified is not None and sgn * (verified - best) > tol:
             out["wrong"] = "FALSE_OPTIMALITY_CLAIM"
-            return out
-        if status == "optimal" and verified is not None and sgn * (verified - reference) < -tol \
-                and not best_known:
-            out["wrong"] = "BETTER_THAN_REFERENCE"  # wrong answer or wrong reference: investigate
             return out
         if status in ("infeasible", "unbounded"):
             out["wrong"] = "FALSE_INFEASIBILITY_CLAIM"
             return out
-        if status == "optimal" and verified is not None:
-            out["outcome"] = "solved"
-    elif status == "optimal" and verified is not None:
-        out["outcome"] = "solved"  # no reference: trust the claim (Track B before freezing)
+    if reference is not None and verified is not None:
+        out["obj_delta"] = round(sgn * (verified - reference) / max(1.0, abs(reference)), 6)
+    if status == "optimal" and verified is not None:
+        out["outcome"] = "solved"  # claimed optimal, nothing contradicts it
 
     if verified is not None and bound is not None:
         out["gap"] = abs(verified - float(bound)) / max(1e-9, abs(verified))
