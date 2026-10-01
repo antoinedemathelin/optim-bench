@@ -7556,6 +7556,7 @@
     "solved": 49,
     "wrong": 0,
     "sgm10": 53.67,
+    "mean_obj_delta": null,
     "wrong_kinds": [],
     "by_area": {
      "auction": {
@@ -7783,6 +7784,7 @@
     "solved": 21,
     "wrong": 1,
     "sgm10": 57.97,
+    "mean_obj_delta": null,
     "wrong_kinds": [
      "BETTER_THAN_REFERENCE"
     ],
