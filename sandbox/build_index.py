@@ -11,13 +11,13 @@ def compact(rec):
         if not s or not s.get("overall"):
             return None
         o = s["overall"]
-        return {"n": o["n"], "solved": o["solved"], "wrong": o["wrong"], "sgm10": o["sgm10"],
-                "mean_obj_delta": o.get("mean_obj_delta"),
-                "wrong_kinds": o.get("wrong_kinds", []),
-                "by_area": {k: {"n": v["n"], "solved": v["solved"], "wrong": v["wrong"], "sgm10": v["sgm10"]}
-                            for k, v in s["by_area"].items()},
-                "by_family": {k: {"n": v["n"], "solved": v["solved"], "wrong": v["wrong"], "sgm10": v["sgm10"]}
-                              for k, v in s["by_family"].items()}}
+        def group(v):
+            return {"n": v["n"], "solved": v["solved"], "wrong": v["wrong"], "sgm10": v["sgm10"],
+                    "mean_obj_delta": v.get("mean_obj_delta"),
+                    "obj_better": v.get("obj_better"), "obj_worse": v.get("obj_worse")}
+        return dict(group(o), wrong_kinds=o.get("wrong_kinds", []),
+                    by_area={k: group(v) for k, v in s["by_area"].items()},
+                    by_family={k: group(v) for k, v in s["by_family"].items()})
     summ = rec.get("summary") or {}
     return {"ref": rec["ref"], "sha": rec.get("sha", ""), "date": rec["date"], "status": rec.get("status"),
             "error": rec.get("error"), "solver": rec.get("solver"), "mode": rec.get("mode"),

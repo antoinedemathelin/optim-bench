@@ -70,6 +70,16 @@
   .wrong { color: var(--bad); font-weight: 600; }
   a { color: inherit; }
   .empty { color: var(--text-secondary); padding: 24px 0; }
+  .filters { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 8px 0 4px; font-size: 13px; }
+  .filters label { color: var(--text-secondary); display: inline-flex; gap: 6px; align-items: center; }
+  .filters select { font: inherit; color: var(--text-primary); background: var(--surface-2);
+                    border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
+  .sm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 4px; }
+  .sm { background: var(--surface-2); border-radius: 8px; padding: 8px 10px 4px; }
+  .sm-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; }
+  .sm-head span { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sm-head b { font-variant-numeric: tabular-nums; }
+  .zero { stroke: var(--border); stroke-width: 1; }
   @media (max-width: 600px) { .hero .num { font-size: 40px; } }
 </style>
 </head>
@@ -85,6 +95,11 @@
   const app = document.getElementById("app");
   const tip = document.getElementById("tip");
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  // Declared here, not next to the chart functions: those are hoisted declarations,
+  // these are const bindings, and the render block below calls into them.
+  const NS = "http://www.w3.org/2000/svg";
+  const svgEl = (t, attrs) => { const n = document.createElementNS(NS, t); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
+  const hideTip = () => tip.style.display = "none";
   let data;
   try {
     data = await (await fetch("../history/index.json", {cache: "no-store"})).json();
@@ -97,6 +112,8 @@
   app.innerHTML = "";
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const fmt = (v, d = 1) => v == null ? "–" : Number(v).toLocaleString(undefined, {maximumFractionDigits: d, minimumFractionDigits: d});
+  // Relative objective difference: negative means the solver returned a better objective.
+  const pct = (v, d = 2) => v == null ? "–" : (v > 0 ? "+" : "") + (v * 100).toFixed(d) + "%";
 
   if (!evals.length) {
     app.appendChild(el("p", "empty", base ? "Baseline recorded; no solver tag evaluated yet." : "No evaluations yet."));
@@ -112,7 +129,10 @@
     const tile = (lbl, val, delta, good) => { const t = el("div", "tile"); t.appendChild(el("div", "lbl", lbl)); t.appendChild(el("div", "val", val));
       if (delta) t.appendChild(el("div", "delta " + (good == null ? "" : good ? "good" : "bad"), delta)); tiles.appendChild(t); };
     tile("Solved (feedback)", `${fb.solved} / ${fb.n}`, bfb ? `HiGHS ${bfb.solved} / ${bfb.n}` : "", bfb ? (fb.solved >= bfb.solved) : null);
-    tile("Wrong answers", String(fb.wrong + (ho ? ho.wrong : 0)), fb.wrong + (ho ? ho.wrong : 0) ? (fb.wrong_kinds || []).concat(ho ? ho.wrong_kinds : []).join(", ") : "none", !(fb.wrong + (ho ? ho.wrong : 0)));
+    tile("Flags", String(fb.wrong + (ho ? ho.wrong : 0)), fb.wrong + (ho ? ho.wrong : 0) ? (fb.wrong_kinds || []).concat(ho ? ho.wrong_kinds : []).join(", ") : "none", !(fb.wrong + (ho ? ho.wrong : 0)));
+    if (fb.mean_obj_delta != null)
+      tile("Objective vs known (feedback)", pct(fb.mean_obj_delta),
+           (fb.obj_better || 0) + " better, " + (fb.obj_worse || 0) + " worse", fb.mean_obj_delta <= 0);
     if (ho) tile("SGM-10 (held-out)", fmt(ho.sgm10) + " s", bho ? `HiGHS ${fmt(bho.sgm10)} s` : "", bho ? ho.sgm10 <= bho.sgm10 : null);
     tile("Evaluations", String(evals.length), last.date.slice(0, 10) + " · " + (last.solver ? `${last.solver.name || ""} ${last.solver.version || ""}`.trim() : ""));
     app.appendChild(tiles);
@@ -137,12 +157,58 @@
     barChart(`SGM-10 by family, ${last.ref} vs HiGHS (feedback set, seconds)`, fams,
       [{name: last.ref, color: css("--lib"), values: fams.map(a => fb.by_family[a].sgm10)},
        {name: "HiGHS", color: css("--base"), values: fams.map(a => bfb && bfb.by_family[a] ? bfb.by_family[a].sgm10 : null)}]);
+
+    if (evals.some(e => e.feedback && e.feedback.mean_obj_delta != null))
+      lineChart("Objective against the best known value over evaluations (%, negative is better)", evals.map(e => e.ref),
+        [{name: "feedback set", color: css("--lib"), values: evals.map(e => e.feedback && e.feedback.mean_obj_delta != null ? e.feedback.mean_obj_delta * 100 : null)},
+         {name: "held-out set", color: css("--holdout"), values: evals.map(e => e.holdout && e.holdout.mean_obj_delta != null ? e.holdout.mean_obj_delta * 100 : null)}],
+        [], "%", 2);
+
+    // ---- per-family evolution: one panel per family, never 20 lines on one axis
+    const METRICS = {
+      sgm10: {label: "SGM-10 (s)", fmtv: v => fmt(v, 1) + " s", get: g => g ? g.sgm10 : null, ref: g => g ? g.sgm10 : null},
+      solved: {label: "share solved (%)", fmtv: v => fmt(v, 0) + "%", get: g => g && g.n ? g.solved / g.n * 100 : null, ref: g => g && g.n ? g.solved / g.n * 100 : null},
+      obj: {label: "objective vs known (%)", fmtv: v => (v > 0 ? "+" : "") + fmt(v, 2) + "%", get: g => g && g.mean_obj_delta != null ? g.mean_obj_delta * 100 : null, ref: () => null}
+    };
+    app.appendChild(el("h2", null, "Evolution by family"));
+    const bar = el("div", "filters");
+    const mkSel = (label, opts, init) => {
+      const w = el("label"); w.appendChild(document.createTextNode(label));
+      const sel = document.createElement("select");
+      for (const [v, t] of opts) { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); }
+      sel.value = init; w.appendChild(sel); bar.appendChild(w); return sel;
+    };
+    const selSplit = mkSel("Set", [["feedback", "feedback"], ["holdout", "held-out"]], "feedback");
+    const selMetric = mkSel("Metric", Object.entries(METRICS).map(([k, v]) => [k, v.label]), "sgm10");
+    app.appendChild(bar);
+    const lgd = el("div", "legend");
+    const lgSolver = el("span", null, "solver, by tag"); lgd.appendChild(lgSolver);
+    const lgBase = el("span", "dash", "HiGHS baseline"); lgBase.style.setProperty("--c", css("--base")); lgd.appendChild(lgBase);
+    app.appendChild(lgd);
+    const grid = el("div", "sm-grid"); app.appendChild(grid);
+    const drawFamilies = () => {
+      const split = selSplit.value, mk = METRICS[selMetric.value];
+      const colour = css(split === "feedback" ? "--lib" : "--holdout");
+      lgSolver.style.setProperty("--c", colour);
+      lgBase.style.display = selMetric.value === "obj" ? "none" : "";
+      const names = [...new Set(evals.flatMap(e => e[split] ? Object.keys(e[split].by_family) : []))].sort();
+      const panels = names.map(nm => ({
+        name: nm,
+        values: evals.map(e => mk.get(e[split] && e[split].by_family[nm])),
+        ref: base && base[split] ? mk.ref(base[split].by_family[nm]) : null
+      })).filter(pn => pn.values.some(v => v != null));
+      smallMultiples(grid, evals.map(e => e.ref), panels,
+        {color: colour, refColor: css("--base"), fmtv: mk.fmtv});
+    };
+    selSplit.addEventListener("change", drawFamilies);
+    selMetric.addEventListener("change", drawFamilies);
+    drawFamilies();
   }
 
   // table of all evaluations (the table view)
   app.appendChild(el("h2", null, "All evaluations"));
   const tbl = el("table"); const thead = el("thead"); const tr = el("tr");
-  for (const [h, num] of [["tag", 0], ["date", 0], ["solver", 0], ["solved (fb)", 1], ["SGM-10 fb", 1], ["solved (ho)", 1], ["SGM-10 ho", 1], ["wrong", 1], ["wall min", 1], ["report", 0]]) {
+  for (const [h, num] of [["tag", 0], ["date", 0], ["solver", 0], ["solved (fb)", 1], ["SGM-10 fb", 1], ["obj vs known", 1], ["solved (ho)", 1], ["SGM-10 ho", 1], ["flags", 1], ["wall min", 1], ["report", 0]]) {
     tr.appendChild(el("th", num ? "num" : "", h)); }
   thead.appendChild(tr); tbl.appendChild(thead);
   const tb = el("tbody");
@@ -151,6 +217,7 @@
     r.appendChild(el("td", null, label || e.ref)); r.appendChild(el("td", null, e.date.slice(0, 16).replace("T", " ")));
     r.appendChild(el("td", null, e.solver ? `${e.solver.name || ""} ${e.solver.version || ""}`.trim() : (e.status !== "ok" ? "failed: " + (e.error || "") : "")));
     r.appendChild(el("td", "num", f ? `${f.solved}/${f.n}` : "–")); r.appendChild(el("td", "num", f ? fmt(f.sgm10) : "–"));
+    r.appendChild(el("td", "num", f ? pct(f.mean_obj_delta) : "–"));
     r.appendChild(el("td", "num", h ? `${h.solved}/${h.n}` : "–")); r.appendChild(el("td", "num", h ? fmt(h.sgm10) : "–"));
     const w = (f ? f.wrong : 0) + (h ? h.wrong : 0); r.appendChild(el("td", "num" + (w ? " wrong" : ""), String(w)));
     r.appendChild(el("td", "num", fmt(e.wall_minutes, 0)));
@@ -164,13 +231,18 @@
   if (base) document.getElementById("sub").textContent = `Hardware: ${base.hardware || "?"}. Limit ${base.time_limit} s per instance.`;
 
   // ---- charts -------------------------------------------------------------
-  const NS = "http://www.w3.org/2000/svg";
-  const svgEl = (t, attrs) => { const n = document.createElementNS(NS, t); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
   function frame(title, legendItems) {
     const card = el("div", "card"); card.appendChild(el("h2", null, title)).style.margin = "0 0 6px";
     const lg = el("div", "legend");
     for (const it of legendItems) { const s = el("span", it.kind || "", it.name); s.style.setProperty("--c", it.color); lg.appendChild(s); }
     card.appendChild(lg); app.appendChild(card); return card;
+  }
+  function niceTicks(lo, hi, n = 4) {
+    if (hi - lo < 1e-12) hi = lo + 1;
+    const raw = (hi - lo) / n, p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    const step = [1, 2, 2.5, 5, 10].find(m => m * p >= raw) * p;
+    const out = []; for (let v = Math.floor(lo / step) * step; v <= Math.ceil(hi / step) * step + 1e-9; v += step) out.push(+v.toFixed(6));
+    return out;
   }
   function ticks(max, n = 4) { const raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), s = [1, 2, 2.5, 5, 10].find(m => m * p >= raw) * p; const out = []; for (let v = 0; v <= max + 1e-9; v += s) out.push(+v.toFixed(6)); return out; }
   function showTip(x, y, title, rows) {
@@ -179,29 +251,45 @@
     tip.style.display = "block"; const w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.min(x + 14, window.innerWidth - w - 8) + "px"; tip.style.top = Math.max(8, y - h - 12) + "px";
   }
-  const hideTip = () => tip.style.display = "none";
 
   function lineChart(title, labels, series, refs, unit, digits = 1) {
     const card = frame(title, series.map(s => ({name: s.name, color: s.color})).concat(refs.map(r => ({name: r.name, color: r.color, kind: "dash"}))));
     const W = 1000, H = 300, m = {l: 50, r: 110, t: 12, b: 34}; const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const all = series.flatMap(s => s.values).concat(refs.map(r => r.value)).filter(v => v != null);
-    const max = Math.max(1, ...all) * 1.08, tk = ticks(max); const ymax = tk[tk.length - 1] < max ? tk[tk.length - 1] + (tk[1] - tk[0]) : tk[tk.length - 1];
-    const xs = i => m.l + (labels.length === 1 ? iw / 2 : i * iw / (labels.length - 1)), ys = v => m.t + ih - v / ymax * ih;
+    // The domain always contains zero, and extends below it only when the data does.
+    const lo0 = Math.min(0, ...all), hi0 = Math.max(1e-9, ...all), pad = (hi0 - lo0) * 0.08 || 1;
+    const tk = niceTicks(lo0 < 0 ? lo0 - pad : 0, hi0 + pad);
+    const ymin = tk[0], ymax = tk[tk.length - 1];
+    const xs = i => m.l + (labels.length === 1 ? iw / 2 : i * iw / (labels.length - 1)),
+          ys = v => m.t + ih - (v - ymin) / (ymax - ymin) * ih;
     const svg = svgEl("svg", {viewBox: `0 0 ${W} ${H}`, role: "img"}); card.appendChild(svg);
     const grid = svgEl("g", {class: "grid"}), ax = svgEl("g", {class: "axis"}); svg.appendChild(grid); svg.appendChild(ax);
-    for (const v of ticks(ymax)) { grid.appendChild(svgEl("line", {x1: m.l, x2: W - m.r, y1: ys(v), y2: ys(v)}));
+    for (const v of tk) { grid.appendChild(svgEl("line", {x1: m.l, x2: W - m.r, y1: ys(v), y2: ys(v)}));
       const t = svgEl("text", {x: m.l - 8, y: ys(v) + 4, "text-anchor": "end"}); t.textContent = fmt(v, digits); ax.appendChild(t); }
+    if (ymin < 0) svg.appendChild(svgEl("line", {class: "zero", x1: m.l, x2: W - m.r, y1: ys(0), y2: ys(0)}));
     const step = Math.max(1, Math.ceil(labels.length / 8));
     labels.forEach((lb, i) => { if (i % step === 0 || i === labels.length - 1) { const t = svgEl("text", {x: xs(i), y: H - 12, "text-anchor": "middle"}); t.textContent = lb; ax.appendChild(t); } });
+    // Right-edge labels are collected and pushed apart before they are drawn: a
+    // series sitting on its reference line would otherwise print both on top of
+    // each other.
+    const rlabels = [];
     for (const r of refs) { svg.appendChild(svgEl("line", {x1: m.l, x2: W - m.r, y1: ys(r.value), y2: ys(r.value), stroke: r.color, "stroke-width": 2, "stroke-dasharray": "4 4"}));
-      const t = svgEl("text", {x: W - m.r + 8, y: ys(r.value) + 4, class: "endlabel"}); t.textContent = `${r.name} ${fmt(r.value, digits)}${unit}`; svg.appendChild(t); }
+      rlabels.push({y: ys(r.value), x: W - m.r + 8, text: `${r.name} ${fmt(r.value, digits)}${unit}`}); }
     for (const s of series) {
       const pts = s.values.map((v, i) => v == null ? null : [xs(i), ys(v)]).filter(Boolean);
       if (!pts.length) continue;
       svg.appendChild(svgEl("path", {class: "line", stroke: s.color, d: pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ")}));
       for (const p of pts) svg.appendChild(svgEl("circle", {class: "dot", cx: p[0], cy: p[1], r: 4, fill: s.color}));
       const lastV = s.values.filter(v => v != null).pop(), lp = pts[pts.length - 1];
-      const t = svgEl("text", {x: lp[0] + 8, y: lp[1] + 4, class: "endlabel"}); t.textContent = `${fmt(lastV, digits)}${unit}`; svg.appendChild(t);
+      rlabels.push({y: lp[1], x: lp[0] + 8, text: `${fmt(lastV, digits)}${unit}`});
+    }
+    rlabels.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < rlabels.length; i++)
+      if (rlabels[i].y - rlabels[i - 1].y < 13) rlabels[i].y = rlabels[i - 1].y + 13;
+    const overflow = rlabels.length ? Math.max(0, rlabels[rlabels.length - 1].y - (H - 6)) : 0;
+    for (const lb of rlabels) {
+      const t = svgEl("text", {x: lb.x, y: lb.y - overflow + 4, class: "endlabel"});
+      t.textContent = lb.text; svg.appendChild(t);
     }
     const xh = svgEl("line", {class: "xhair", y1: m.t, y2: m.t + ih}); svg.appendChild(xh);
     const hit = svgEl("rect", {class: "hit", x: m.l, y: m.t, width: iw, height: ih}); svg.appendChild(hit);
@@ -211,6 +299,51 @@
       showTip(ev.clientX, ev.clientY, labels[i], series.map(s => ({name: s.name, color: s.color, value: s.values[i] == null ? "–" : fmt(s.values[i], digits) + unit}))
         .concat(refs.map(r => ({name: r.name, color: r.color, value: fmt(r.value, digits) + unit})))); };
     hit.addEventListener("pointermove", onMove); hit.addEventListener("pointerleave", () => { xh.style.opacity = 0; hideTip(); });
+  }
+
+  // One panel per family on a shared scale: 20+ families can never be 20 lines on
+  // one axis, and a shared domain keeps the panels comparable.
+  function smallMultiples(host, labels, panels, o) {
+    host.innerHTML = "";
+    const all = panels.flatMap(pn => pn.values).concat(panels.map(pn => pn.ref)).filter(v => v != null);
+    if (!all.length) { host.appendChild(el("p", "empty", "No data for this metric yet.")); return; }
+    const lo0 = Math.min(0, ...all), hi0 = Math.max(1e-9, ...all), pad = (hi0 - lo0) * 0.08 || 1;
+    const tk = niceTicks(lo0 < 0 ? lo0 - pad : 0, hi0 + pad, 2);
+    const ymin = tk[0], ymax = tk[tk.length - 1];
+    const W = 240, H = 64, m = {l: 2, r: 8, t: 8, b: 8}, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const xs = i => m.l + (labels.length === 1 ? iw / 2 : i * iw / (labels.length - 1));
+    const ys = v => m.t + ih - (v - ymin) / (ymax - ymin) * ih;
+    for (const pn of panels) {
+      const card = el("div", "sm"), head = el("div", "sm-head");
+      const lastV = pn.values.filter(v => v != null).pop();
+      head.appendChild(el("span", null, pn.name));
+      head.appendChild(el("b", null, lastV == null ? "–" : o.fmtv(lastV)));
+      card.appendChild(head);
+      const svg = svgEl("svg", {viewBox: `0 0 ${W} ${H}`, role: "img"});
+      svg.setAttribute("aria-label", `${pn.name}: ${lastV == null ? "no value" : o.fmtv(lastV)} at ${labels[labels.length - 1]}`);
+      card.appendChild(svg);
+      if (ymin < 0) svg.appendChild(svgEl("line", {class: "zero", x1: m.l, x2: m.l + iw, y1: ys(0), y2: ys(0)}));
+      if (pn.ref != null) svg.appendChild(svgEl("line", {x1: m.l, x2: m.l + iw, y1: ys(pn.ref), y2: ys(pn.ref),
+        stroke: o.refColor, "stroke-width": 2, "stroke-dasharray": "4 4"}));
+      const pts = pn.values.map((v, i) => v == null ? null : [xs(i), ys(v)]).filter(Boolean);
+      if (pts.length) {
+        svg.appendChild(svgEl("path", {class: "line", stroke: o.color, d: pts.map((q, i) => (i ? "L" : "M") + q[0] + " " + q[1]).join(" ")}));
+        const lp = pts[pts.length - 1];
+        svg.appendChild(svgEl("circle", {class: "dot", cx: lp[0], cy: lp[1], r: 4, fill: o.color}));
+      }
+      const xh = svgEl("line", {class: "xhair", y1: m.t, y2: m.t + ih}); svg.appendChild(xh);
+      const hit = svgEl("rect", {class: "hit", x: m.l, y: 0, width: iw, height: H}); svg.appendChild(hit);
+      hit.addEventListener("pointermove", ev => {
+        const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W;
+        let i = 0, best = 1e9; labels.forEach((_, k) => { const d = Math.abs(xs(k) - px); if (d < best) { best = d; i = k; } });
+        xh.setAttribute("x1", xs(i)); xh.setAttribute("x2", xs(i)); xh.style.opacity = 1;
+        const rows = [{name: labels[i], color: o.color, value: pn.values[i] == null ? "–" : o.fmtv(pn.values[i])}];
+        if (pn.ref != null) rows.push({name: "HiGHS", color: o.refColor, value: o.fmtv(pn.ref)});
+        showTip(ev.clientX, ev.clientY, pn.name, rows);
+      });
+      hit.addEventListener("pointerleave", () => { xh.style.opacity = 0; hideTip(); });
+      host.appendChild(card);
+    }
   }
 
   function barChart(title, cats, series) {
