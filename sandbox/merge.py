@@ -12,6 +12,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from evaluate import summarize  # noqa: E402
 
 
+def _delta_fields(aggs):
+    b = sum(a.get("obj_better", 0) for a in aggs)
+    e = sum(a.get("obj_equal", 0) for a in aggs)
+    w = sum(a.get("obj_worse", 0) for a in aggs)
+    total = b + e + w
+    weighted = sum(a["mean_obj_delta"] * (a.get("obj_better", 0) + a.get("obj_equal", 0)
+                                          + a.get("obj_worse", 0))
+                   for a in aggs if a.get("mean_obj_delta") is not None)
+    return {"obj_better": b, "obj_equal": e, "obj_worse": w,
+            "mean_obj_delta": round(weighted / total, 5) if total else None}
+
+
+def merge_obj_delta(summary, shard_summaries):
+    """Overlay the objective-difference aggregate, summed over the shards."""
+    for split, s in summary.items():
+        for level in ("by_family", "by_area"):
+            for g, agg in s.get(level, {}).items():
+                agg.update(_delta_fields([ss[split][level][g] for ss in shard_summaries
+                                          if g in ss.get(split, {}).get(level, {})]))
+        if s.get("overall"):
+            s["overall"].update(_delta_fields([ss[split]["overall"] for ss in shard_summaries
+                                               if ss.get(split, {}).get("overall")]))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("shards", nargs="+")
@@ -27,7 +51,12 @@ def main():
     base["status"] = "ok" if not errors else "error"
     if errors:
         base["error"] = " | ".join(errors)
+    # Everything except the objective difference recomputes from the rows. The
+    # per-instance difference is deliberately absent from public rows (it is a
+    # channel an adversarial solver could use to read back stored objectives), so
+    # its aggregate is carried over from the shards instead.
     base["summary"] = summarize(base["rows"], base["time_limit"])
+    merge_obj_delta(base["summary"], [p["summary"] for p in parts if p.get("summary")])
     Path(args.out).write_text(json.dumps(base, indent=1))
     print(f"{len(base['rows'])} rows from {len(parts)} shards -> {args.out}")
 
