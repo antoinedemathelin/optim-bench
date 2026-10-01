@@ -6245,6 +6245,424 @@
      }
     }
    }
+  },
+  {
+   "ref": "v0.11.1",
+   "sha": "4a103b9add7f84f3dc9c3e6f48c6b89a044e2d52",
+   "date": "2026-10-01T15:19:31+00:00",
+   "status": "ok",
+   "error": null,
+   "solver": {
+    "name": "milpsolve",
+    "version": "0.11.1"
+   },
+   "mode": "default",
+   "time_limit": 300,
+   "hardware": "AMD EPYC 9V74 80-Core Processor; 4 cpus; Linux 6.17.0-1022-azure",
+   "wall_minutes": 23.9,
+   "report": "v0.11.1.md",
+   "feedback": {
+    "n": 61,
+    "solved": 47,
+    "wrong": 0,
+    "sgm10": 52.86,
+    "wrong_kinds": [],
+    "by_area": {
+     "auction": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 23.96
+     },
+     "energy": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 198.32
+     },
+     "facility-location": {
+      "n": 5,
+      "solved": 5,
+      "wrong": 0,
+      "sgm10": 59.71
+     },
+     "lot-sizing": {
+      "n": 5,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 90.52
+     },
+     "network-design": {
+      "n": 5,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 73.34
+     },
+     "packing": {
+      "n": 8,
+      "solved": 8,
+      "wrong": 0,
+      "sgm10": 13.97
+     },
+     "routing": {
+      "n": 11,
+      "solved": 9,
+      "wrong": 0,
+      "sgm10": 54.35
+     },
+     "scheduling": {
+      "n": 9,
+      "solved": 5,
+      "wrong": 0,
+      "sgm10": 48.65
+     },
+     "set-covering": {
+      "n": 6,
+      "solved": 6,
+      "wrong": 0,
+      "sgm10": 44.05
+     },
+     "workforce": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 103.85
+     }
+    },
+    "by_family": {
+     "bin-packing": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 1.26
+     },
+     "cap-facility-loc": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 56.27
+     },
+     "comb-auction": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 23.96
+     },
+     "cumulative-sched": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "cutting": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 59.86
+     },
+     "cvrp-compact": {
+      "n": 4,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 46.96
+     },
+     "fixed-charge-flow": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 78.0
+     },
+     "fixed-charge-transport": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 22.25
+     },
+     "job-shop": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 5.71
+     },
+     "knapsack": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 35.94
+     },
+     "lot-sizing": {
+      "n": 4,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 65.86
+     },
+     "lot-sizing-mip": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "multicommodity-design": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 116.89
+     },
+     "p-median": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 75.36
+     },
+     "production-sched": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "rail-timetabling": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "set-covering": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 37.91
+     },
+     "set-partitioning": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 58.81
+     },
+     "shift-scheduling": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 103.85
+     },
+     "sports-schedule": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 4.59
+     },
+     "swath-routing": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 20.33
+     },
+     "timetabling": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "tsp-compact": {
+      "n": 4,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 57.35
+     },
+     "unit-commitment": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 198.32
+     },
+     "vrp-compact": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 83.9
+     },
+     "vrp-set-part": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 117.01
+     }
+    }
+   },
+   "holdout": {
+    "n": 27,
+    "solved": 19,
+    "wrong": 1,
+    "sgm10": 61.38,
+    "wrong_kinds": [
+     "BETTER_THAN_REFERENCE"
+    ],
+    "by_area": {
+     "auction": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 31.36
+     },
+     "energy": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 46.04
+     },
+     "facility-location": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 71.87
+     },
+     "lot-sizing": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 82.8
+     },
+     "network-design": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 53.64
+     },
+     "packing": {
+      "n": 3,
+      "solved": 2,
+      "wrong": 1,
+      "sgm10": 37.07
+     },
+     "routing": {
+      "n": 5,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 80.47
+     },
+     "scheduling": {
+      "n": 3,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 31.81
+     },
+     "set-covering": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 52.48
+     },
+     "workforce": {
+      "n": 2,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     }
+    },
+    "by_family": {
+     "bin-packing": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 1,
+      "sgm10": 48.53
+     },
+     "cap-facility-loc": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 66.56
+     },
+     "comb-auction": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 31.36
+     },
+     "cumulative-sched": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "cvrp-compact": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 58.42
+     },
+     "fixed-charge-transport": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 27.67
+     },
+     "job-shop": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 5.35
+     },
+     "knapsack": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 20.44
+     },
+     "lot-sizing": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 82.8
+     },
+     "multicommodity-design": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 97.51
+     },
+     "p-median": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 83.6
+     },
+     "set-covering": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 20.4
+     },
+     "set-partitioning": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 253.93
+     },
+     "shift-scheduling": {
+      "n": 2,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "swath-routing": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0
+     },
+     "tsp-compact": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 54.62
+     },
+     "unit-commitment": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 46.04
+     }
+    }
+   }
   }
  ]
 }
