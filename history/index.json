@@ -17119,6 +17119,617 @@
      }
     }
    }
+  },
+  {
+   "ref": "v0.13.1",
+   "sha": "190966241c9539252c8b008e345b7370f51c5f45",
+   "date": "2026-10-03T20:59:51+00:00",
+   "status": "ok",
+   "error": null,
+   "solver": {
+    "name": "milpsolve",
+    "version": "0.13.1"
+   },
+   "mode": "default",
+   "time_limit": 300,
+   "hardware": "AMD EPYC 7763 64-Core Processor; 4 cpus; Linux 6.17.0-1022-azure",
+   "wall_minutes": 23.5,
+   "report": "v0.13.1.md",
+   "feedback": {
+    "n": 61,
+    "solved": 48,
+    "wrong": 0,
+    "sgm10": 49.18,
+    "mean_obj_delta": 0.00405,
+    "obj_better": 2,
+    "obj_worse": 14,
+    "wrong_kinds": [],
+    "by_area": {
+     "auction": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 17.48,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "energy": {
+      "n": 4,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 237.91,
+      "mean_obj_delta": 0.00101,
+      "obj_better": 0,
+      "obj_worse": 4
+     },
+     "facility-location": {
+      "n": 5,
+      "solved": 5,
+      "wrong": 0,
+      "sgm10": 52.45,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "lot-sizing": {
+      "n": 5,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 64.32,
+      "mean_obj_delta": 0.00011,
+      "obj_better": 2,
+      "obj_worse": 1
+     },
+     "network-design": {
+      "n": 5,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 84.2,
+      "mean_obj_delta": 0.00776,
+      "obj_better": 0,
+      "obj_worse": 2
+     },
+     "packing": {
+      "n": 8,
+      "solved": 8,
+      "wrong": 0,
+      "sgm10": 9.37,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "routing": {
+      "n": 11,
+      "solved": 9,
+      "wrong": 0,
+      "sgm10": 51.97,
+      "mean_obj_delta": 3e-05,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "scheduling": {
+      "n": 9,
+      "solved": 6,
+      "wrong": 0,
+      "sgm10": 49.18,
+      "mean_obj_delta": 0.00391,
+      "obj_better": 0,
+      "obj_worse": 3
+     },
+     "set-covering": {
+      "n": 6,
+      "solved": 6,
+      "wrong": 0,
+      "sgm10": 43.88,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "workforce": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 103.33,
+      "mean_obj_delta": 0.04197,
+      "obj_better": 0,
+      "obj_worse": 2
+     }
+    },
+    "by_family": {
+     "bin-packing": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 0.48,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "cap-facility-loc": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 54.47,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "comb-auction": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 17.48,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "cumulative-sched": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0,
+      "mean_obj_delta": 0.03419,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "cutting": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 27.72,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "cvrp-compact": {
+      "n": 4,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 46.4,
+      "mean_obj_delta": 9e-05,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "fixed-charge-flow": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 68.27,
+      "mean_obj_delta": 0.01128,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "fixed-charge-transport": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 74.08,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "job-shop": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 8.26,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "knapsack": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 25.19,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "lot-sizing": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 42.01,
+      "mean_obj_delta": -3e-05,
+      "obj_better": 2,
+      "obj_worse": 0
+     },
+     "lot-sizing-mip": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0,
+      "mean_obj_delta": 0.00067,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "multicommodity-design": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 110.0,
+      "mean_obj_delta": 0.00813,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "p-median": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 44.96,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "production-sched": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 139.07,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "rail-timetabling": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0,
+      "mean_obj_delta": 0.00102,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "set-covering": {
+      "n": 4,
+      "solved": 4,
+      "wrong": 0,
+      "sgm10": 31.42,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "set-partitioning": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 81.16,
+      "mean_obj_delta": 1e-05,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "shift-scheduling": {
+      "n": 4,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 103.33,
+      "mean_obj_delta": 0.04197,
+      "obj_better": 0,
+      "obj_worse": 2
+     },
+     "sports-schedule": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 8.04,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "swath-routing": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 26.48,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "timetabling": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "tsp-compact": {
+      "n": 4,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 52.81,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "unit-commitment": {
+      "n": 4,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 237.91,
+      "mean_obj_delta": 0.00101,
+      "obj_better": 0,
+      "obj_worse": 4
+     },
+     "vrp-compact": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 107.36,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "vrp-set-part": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 66.69,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     }
+    }
+   },
+   "holdout": {
+    "n": 27,
+    "solved": 22,
+    "wrong": 0,
+    "sgm10": 40.23,
+    "mean_obj_delta": -0.00073,
+    "obj_better": 2,
+    "obj_worse": 4,
+    "wrong_kinds": [],
+    "by_area": {
+     "auction": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 27.66,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "energy": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 36.39,
+      "mean_obj_delta": -1e-05,
+      "obj_better": 1,
+      "obj_worse": 0
+     },
+     "facility-location": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 58.34,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "lot-sizing": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 80.76,
+      "mean_obj_delta": 0.00057,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "network-design": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 36.57,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "packing": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 5.02,
+      "mean_obj_delta": -0.02083,
+      "obj_better": 1,
+      "obj_worse": 0
+     },
+     "routing": {
+      "n": 5,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 65.55,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "scheduling": {
+      "n": 3,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 27.78,
+      "mean_obj_delta": 0.00963,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "set-covering": {
+      "n": 3,
+      "solved": 3,
+      "wrong": 0,
+      "sgm10": 21.62,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "workforce": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 174.86,
+      "mean_obj_delta": 0.00639,
+      "obj_better": 0,
+      "obj_worse": 1
+     }
+    },
+    "by_family": {
+     "bin-packing": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 0.76,
+      "mean_obj_delta": -0.03125,
+      "obj_better": 1,
+      "obj_worse": 0
+     },
+     "cap-facility-loc": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 53.37,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "comb-auction": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 27.66,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "cumulative-sched": {
+      "n": 1,
+      "solved": 0,
+      "wrong": 0,
+      "sgm10": 300.0,
+      "mean_obj_delta": 0.0289,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "cvrp-compact": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 59.16,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "fixed-charge-transport": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 31.71,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "job-shop": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 3.19,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "knapsack": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 19.24,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "lot-sizing": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 80.76,
+      "mean_obj_delta": 0.00057,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "multicommodity-design": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 42.0,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "p-median": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 69.48,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "set-covering": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 12.8,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "set-partitioning": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 50.82,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "shift-scheduling": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 174.86,
+      "mean_obj_delta": 0.00639,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "swath-routing": {
+      "n": 1,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 121.3,
+      "mean_obj_delta": 1e-05,
+      "obj_better": 0,
+      "obj_worse": 1
+     },
+     "tsp-compact": {
+      "n": 2,
+      "solved": 1,
+      "wrong": 0,
+      "sgm10": 52.6,
+      "mean_obj_delta": 0.0,
+      "obj_better": 0,
+      "obj_worse": 0
+     },
+     "unit-commitment": {
+      "n": 2,
+      "solved": 2,
+      "wrong": 0,
+      "sgm10": 36.39,
+      "mean_obj_delta": -1e-05,
+      "obj_better": 1,
+      "obj_worse": 0
+     }
+    }
+   }
   }
  ]
 }
